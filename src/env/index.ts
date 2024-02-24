@@ -3,6 +3,7 @@ import { Exception } from '@/utils/exception';
 
 const environmentVariablesSchema = zod.object({
   PORT: zod.coerce.number(),
+  OPEN_FOOD_URL: zod.string(),
 });
 
 const _env = environmentVariablesSchema.safeParse(process.env);

@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { Exception } from './exception';
+import { Exception } from '@/utils/exception';
 
 export function errorMiddleware(
   error: Error,

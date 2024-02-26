@@ -2,9 +2,10 @@ import 'dotenv/config';
 import 'express-async-errors';
 import express from 'express';
 import cors from 'cors';
-import { errorMiddleware } from '@/utils/errorMiddleware';
 import morgan from 'morgan';
 import helmet from 'helmet';
+
+import { errorMiddleware } from '@/middlewares/errorMiddleware';
 
 const app = express();
 app.use(express.json()); // enable json use

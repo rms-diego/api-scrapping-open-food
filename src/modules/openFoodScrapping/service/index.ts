@@ -310,6 +310,8 @@ export class OpenFoodService {
     await page.waitForSelector('.title-1[property="food:name"]');
     let productContent = await this.getDetailDescriptionProduct(page);
 
+    await browser.close();
+
     const data = this.serializeData(productContent.nutritionTable);
 
     productContent.data = data;
@@ -321,12 +323,8 @@ export class OpenFoodService {
       if (level) values.unshift(level);
     }
 
-    await browser.close();
-
-    // remove nutrition
-    if ('nutritionTable' in data) {
-      delete data.nutritionTable;
-    }
+    // @ts-ignore
+    delete productContent.nutritionTable;
 
     return productContent;
   };

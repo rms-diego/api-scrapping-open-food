@@ -7,5 +7,6 @@ const openFoodController = new OpenFoodController(openFoodService);
 
 const routes = Router();
 routes.get('/products/:productId', openFoodController.searchByProductId);
+routes.get('/products', openFoodController.searchByTerm);
 
 export { routes };

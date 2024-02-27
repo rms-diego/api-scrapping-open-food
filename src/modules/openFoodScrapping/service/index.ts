@@ -328,4 +328,70 @@ export class OpenFoodService {
 
     return productContent;
   };
+
+  public searchByTerm = async ({
+    nova = '1',
+    nutrition = 'A',
+    pageOpenFood = '1',
+  }: {
+    nova?: string;
+    nutrition?: string;
+    pageOpenFood?: string;
+  }) => {
+    const { browser, page } = await getPuppeteerClient();
+
+    const pageUrl = `${this.openFoodUrl}/${pageOpenFood}`;
+    await page.goto(pageUrl);
+
+    await page.waitForSelector('#products_match_all');
+
+    const dataScraping = await page.evaluate(() => {
+      const productsList = document.querySelectorAll(
+        'ul#products_match_all li'
+      );
+
+      const data = [];
+
+      for (const product of productsList) {
+        const images = product.getElementsByClassName('list_product_icons');
+        const link = product.querySelector('.list_product_a')!;
+        const productId = link.getAttribute('href')!.split('/').at(4)!;
+
+        const nutriScoreImage = images.item(0);
+        const novaImage = images.item(1);
+
+        const splitNutriScore = nutriScoreImage!
+          .getAttribute('title')!
+          .split(' - ');
+
+        const splitNova = novaImage!.getAttribute('title')!.split(' - ');
+
+        const validateUnknownNova = splitNova.at(0)!.includes('não calculada')
+          ? splitNova.at(0)
+          : splitNova.at(0)!.substring(5);
+
+        data.push({
+          id: productId,
+          name: product.textContent!,
+          nutrition: {
+            score: splitNutriScore.at(0)!.substring(11).trim(),
+            title: splitNutriScore.at(1)!.trim(),
+          },
+          nova: {
+            score: validateUnknownNova,
+            title: splitNova.at(1),
+          },
+        });
+      }
+
+      return data;
+    });
+    await browser.close();
+
+    const filterByTerms = dataScraping.filter(
+      (data) => data.nova.score === nova && data.nutrition.score === nutrition
+    );
+
+    return filterByTerms;
+  };
 }

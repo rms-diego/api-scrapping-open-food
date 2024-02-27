@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { OpenFoodService } from '../service';
-import { Exception } from '@/utils/exception';
+
+import { searchByTermSchema } from '@/utils/validations';
 
 export class OpenFoodController {
   constructor(private readonly openFoodService: OpenFoodService) {}
@@ -14,11 +15,11 @@ export class OpenFoodController {
   };
 
   public searchByTerm = async (req: Request, res: Response) => {
-    const { nova, nutrition, page } = req.query;
+    const { nova, nutrition, page } = searchByTermSchema.parse(req.query); // validations request query params
 
     const result = await this.openFoodService.searchByTerm({
       nova: nova?.toString(),
-      nutrition: nutrition?.toString(),
+      nutrition: nutrition?.toString().toUpperCase(),
       pageOpenFood: page?.toString(),
     });
 

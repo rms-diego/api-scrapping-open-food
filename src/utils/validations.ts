@@ -1,5 +1,10 @@
 import { z as zod } from 'zod';
 
+
+export const searchByIdSchema = zod.object({
+  productId: zod.coerce.string()
+});
+
 export const searchByTermSchema = zod.object({
   nova: zod
     .coerce

@@ -1,13 +1,13 @@
 import { Request, Response } from 'express';
 import { OpenFoodService } from '../service';
 
-import { searchByTermSchema } from '@/utils/validations';
+import { searchByIdSchema, searchByTermSchema } from '@/utils/validations';
 
 export class OpenFoodController {
   constructor(private readonly openFoodService: OpenFoodService) {}
 
   public searchByProductId = async (req: Request, res: Response) => {
-    const { productId } = req.params;
+    const { productId } = searchByIdSchema.parse(req.params);
 
     const content = await this.openFoodService.searchByProductId(productId);
 

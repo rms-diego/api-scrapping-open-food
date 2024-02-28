@@ -1,6 +1,7 @@
 import { Router } from 'express';
+
 import swaggerUi from 'swagger-ui-express';
-import swagger from '@/utils/swagger.json'
+import swagger from '@/utils/swagger.json';
 
 import { OpenFoodController } from '@/modules/openFoodScrapping/controller';
 import { OpenFoodService } from '@/modules/openFoodScrapping/service';
@@ -10,8 +11,10 @@ const openFoodController = new OpenFoodController(openFoodService);
 
 const routes = Router();
 
+routes.use('/docs', swaggerUi.serve);
+routes.get('/docs', swaggerUi.setup(swagger));
+
 routes.get('/products/:productId', openFoodController.searchByProductId);
 routes.get('/products', openFoodController.searchByTerm);
-routes.get('/docs',  swaggerUi.serve, swaggerUi.setup(swagger));
 
 export { routes };

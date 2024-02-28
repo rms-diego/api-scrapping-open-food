@@ -1,0 +1,84 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "IN8 SCRAPPING CHALLENGER",
+    "version": "1.0.0",
+    "description": "resolução do desafio vaga desenvolvedor",
+    "contact": {
+      "name": "Diego Ramos",
+      "email": "diegorbrito9@gmail.com"
+    }
+  },
+  "paths": {
+    "/products": {
+      "get": {
+        "summary": "Buscar por Termo",
+        "description": "Endpoint para buscar informações de produtos por um termo de pesquisa.",
+        "tags": ["Products"],
+        "parameters": [
+          {
+            "name": "nova",
+            "in": "query",
+            "description": "Produto com a pontuação NOVA que deseja ser buscar. (valor padrão é: 1)",
+            "required": false
+          },
+          {
+            "name": "nutrition",
+            "in": "query",
+            "description": "Produto com a pontuação Nutri-Score que deseja ser buscar. (valor padrão é: 'A')",
+            "required": false
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Pagina do open food que deseja fazer o scrapping. (valor padrão é: 1)",
+            "required": false,
+            "example": "1"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK. Retorna as informações dos produtos encontrados.",
+            "schema": {}
+          },
+          "400": {
+            "description": "Bad Request. Requisição inválida."
+          },
+          "500": {
+            "description": "Internal Server Error. Erro interno do servidor."
+          }
+        }
+      }
+    },
+
+    "/products/{productId}": {
+      "get": {
+        "summary": "Buscar por ID do Produto",
+        "description": "Endpoint para buscar informações de um produto pelo seu ID.",
+        "tags": ["Products"],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "description": "ID do produto a ser pesquisado.",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK. Retorna as informações do produto."
+          },
+          "400": {
+            "description": "Bad Request. Requisição inválida."
+          },
+          "404": {
+            "description": "Not Found. Produto não encontrado."
+          },
+          "500": {
+            "description": "Internal Server Error. Erro interno do servidor."
+          }
+        }
+      }
+    }
+  }
+}

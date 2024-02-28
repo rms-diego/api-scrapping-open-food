@@ -7,7 +7,7 @@ import helmet from 'helmet';
 
 import { errorMiddleware } from '@/middlewares/errorMiddleware';
 
-import { routes } from '@/modules/openFoodScrapping/routes';
+import { routes } from '../routes';
 
 const app = express();
 

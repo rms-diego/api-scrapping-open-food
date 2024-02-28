@@ -14,9 +14,13 @@ export const searchByTermSchema = zod.object({
     .optional(),
 
   nutrition: zod
+    .coerce
     .string()
     .regex(/^[A-E]$/i)
     .optional(),
 
-  page: zod.coerce.number().nullable(),
+  page: zod
+    .coerce
+    .string()
+    .optional(),
 });

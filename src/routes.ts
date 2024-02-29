@@ -11,6 +11,12 @@ const openFoodController = new OpenFoodController(openFoodService);
 
 const routes = Router();
 
+routes.get('/', (req, res) =>
+  res.status(200).json({
+    message: 'Server is running',
+  })
+);
+
 routes.use('/docs', swaggerUi.serve);
 routes.get('/docs', swaggerUi.setup(swagger));
 

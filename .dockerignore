@@ -1,0 +1,20 @@
+# Arquivos e diretórios do sistema
+node_modules
+npm-debug.log
+
+# Arquivos de desenvolvimento
+.DS_Store
+*.env.local
+*.env.development.local
+*.env.test.local
+*.env.production.local
+
+# ignorando package-lock
+package-lock.json
+
+# arquivos de texto do projeto 
+*.md
+.gitignore
+
+# diretorio de build do projeto
+dist

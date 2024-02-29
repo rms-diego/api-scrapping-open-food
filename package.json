@@ -12,7 +12,7 @@
     "start": "node dist/server.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Diego Ramos <diegorbrito9@gmail.com>",
   "license": "ISC",
   "devDependencies": {
     "@types/cors": "^2.8.17",

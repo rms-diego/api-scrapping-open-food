@@ -216,7 +216,6 @@ export class OpenFoodService {
       .filter((string) => !string.includes('Fibra alimentar'));
 
     // proteins
-    // const test = tableBody!
     const [proteinsPerHundredGrams, proteinsPerServing] = tableBody!
       .item(6)
       .textContent!.split('\n')

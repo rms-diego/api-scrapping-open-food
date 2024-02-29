@@ -1,293 +1,288 @@
 import { env } from '@/env';
 import { Exception } from '@/utils/exception';
 import { getPuppeteerClient } from '@/utils/puppeteer';
-import { Page } from 'puppeteer';
+import { DataProductsSearchByTerm } from '../types';
 
 export class OpenFoodService {
   constructor(private readonly openFoodUrl: string = env.OPEN_FOOD_URL) {}
 
-  private calculateLevel = (content: string) => {
-    if (content.includes('quantidade baixa')) {
-      return 'low';
-    }
+  private scrappingSearchByProductId = () => {
+    const productTitle = document.querySelector('.title-1')!.textContent;
 
-    if (content.includes('quantidade moderada')) {
-      return 'moderate';
-    }
+    const productQuantity = document.querySelector(
+      '#field_quantity_value'
+    )!.textContent;
 
-    if (content.includes('quantidade elevada')) {
-      return 'high';
-    }
-  };
+    const ingredientsAnalysis = document.querySelector(
+      '#panel_ingredients_analysis_content'
+    )!.textContent;
 
-  private getGramsFromNutritionTable = (
-    nutritionTable: string[],
-    startCompareString: string,
-    finalCompareString?: string
-  ) => {
-    if (!finalCompareString) {
-      const startIndex = nutritionTable.indexOf('Sal');
+    const palmOilValidation =
+      ingredientsAnalysis!.includes('Sem óleo de palma');
 
-      const saltArr = nutritionTable.splice(startIndex);
-      const perHundredGrams = saltArr.at(1);
-      const perServingSize = saltArr.at(2);
+    const hasPalmOil = palmOilValidation ? false : 'unknown';
 
-      return [perHundredGrams, perServingSize];
-    }
+    const isVegan =
+      ingredientsAnalysis!.includes('Não vegano') ||
+      ingredientsAnalysis!.includes('Desconhece-se se é vegano')
+        ? false
+        : true;
 
-    const startIndex = nutritionTable.indexOf(startCompareString);
-    const finalIndex = nutritionTable.indexOf(finalCompareString);
+    const isVegetarian =
+      ingredientsAnalysis!.includes('Estado vegetariano desconhecido') ||
+      ingredientsAnalysis!.includes('Não vegetariano')
+        ? false
+        : true;
 
-    const arr = nutritionTable.slice(startIndex, finalIndex);
-    const perHundredGrams = arr.at(1);
-    const perServingSize = arr.at(2);
+    // get ingredient list and formatting
+    const ingredientsList = document
+      .querySelector('#panel_ingredients_content')!
+      .textContent!.split('\n')
+      .filter((string) => string.trim() !== '')
+      .map((string) => string.trim());
 
-    return [perHundredGrams, perServingSize];
-  };
+    const productSummary = document.querySelector('#product_summary');
 
-  private serializeData = (nutritionTable: string[]) => {
-    // get energy grams
-    const [energyPerHundredGrams, energyPerServingSize] =
-      this.getGramsFromNutritionTable(
-        nutritionTable,
-        'Energia',
-        'Gorduras/lípidos'
-      );
+    // NUTRI-SCORE SECTION
+    const nutriScoreTextContent = productSummary!.querySelector(
+      `a[href="#panel_nutriscore"]`
+    )?.textContent!;
 
-    // get fat grams
-    const [fatHundredGrams, fatServingSize] = this.getGramsFromNutritionTable(
-      nutritionTable,
-      'Gorduras/lípidos',
-      'Gorduras/lípidos/ácidos gordos saturados'
+    // validate if product have a nutriScore
+    const isUnknownNutriScore =
+      nutriScoreTextContent.includes('Nutri-Score desconhecido') ?? true;
+
+    // formatting nutriScore
+    const nutriScore = !isUnknownNutriScore
+      ? nutriScoreTextContent
+          .split('Qualidade nutricional')
+          .at(0)!
+          .substring(11)
+          .trim()
+      : 'Nutri-Score desconhecido';
+
+    // NOVA SCORE SECTION
+    const novaScoreTextContent = productSummary!.querySelector(
+      `a[href="#panel_nova"]`
+    )?.textContent!;
+
+    // validate if product have a nova score
+    const isUnknownNovaScore =
+      novaScoreTextContent.includes('NOVA não calculada') ?? true;
+
+    const novaScore = !isUnknownNovaScore
+      ? novaScoreTextContent.split('Alimentos').at(0)!.substring(4).trim()
+      : 'NOVA não calculada';
+
+    const novaScoreTitle =
+      novaScore === 'NOVA não calculada'
+        ? 'Nível desconhecido de processamento do alimento'
+        : novaScoreTextContent.split('NOVA ')!.at(1)!.substring(1);
+
+    // PRODUCT PORTION SECTION
+    const portionTextContent = document
+      .querySelector('thead')!
+      .textContent!.split('\n')
+      .filter((string) => string.trim() !== '')
+      .map((string) => string.trim())
+      .find((string) => string.includes('Como vendidopor porção'));
+
+    // validate if product have a portion on nutrition table
+    const isUnknownPortion = portionTextContent
+      ? portionTextContent.split('(').at(1)!.slice(0, -1)
+      : 'unknown';
+
+    // NUTRITION PERCENTAGE AND QUANTITY SECTION
+    const nutritionValues = document
+      .querySelector('#panel_nutrient_levels_content')!
+      .textContent!.split('\n')
+      .filter((string) => string.trim() !== '')
+      .map((string) => string.trim())
+      .filter((string) => string.includes('%'));
+
+    const fatPercentage = nutritionValues.find((nutrition) =>
+      nutrition.includes('Gorduras/lípidos')
     );
 
-    // get carbs grams
-    const [carbsHundredGrams, carbsServingSize] =
-      this.getGramsFromNutritionTable(
-        nutritionTable,
-        'Carboidratos',
-        'Açúcares'
-      );
-
-    // get fiber grams
-    const [fiberHundredGrams, fiberServingSize] =
-      this.getGramsFromNutritionTable(
-        nutritionTable,
-        'Fibra alimentar',
-        'Proteínas'
-      );
-
-    // get proteins grams
-    const [proteinsHundredGrams, proteinsServingSize] =
-      this.getGramsFromNutritionTable(nutritionTable, 'Proteínas', 'Sal');
-
-    // get salt grams
-    const [saltHundredGrams, saltServingSize] = this.getGramsFromNutritionTable(
-      nutritionTable,
-      'Sal'
+    const saturatedFatPercentage = nutritionValues.find((nutrition) =>
+      nutrition.includes('Gorduras/lípidos/ácidos gordos saturados')
     );
+
+    const sugarPercentage = nutritionValues.find((nutrition) =>
+      nutrition.includes('Açúcares')
+    );
+
+    const saltPercentage = nutritionValues.find((nutrition) =>
+      nutrition.includes('Sal em')
+    );
+
+    const values = [];
+    if (fatPercentage) {
+      const splitFatPercentage = fatPercentage.split(' (').at(0)!.split(' ');
+
+      const quantity = splitFatPercentage
+        .at(splitFatPercentage.length - 1)!
+        .trim()!;
+
+      values.push([quantity, fatPercentage]);
+    }
+
+    if (saturatedFatPercentage) {
+      const splitSaturatedFatPercentage = saturatedFatPercentage
+        .split(' (')
+        .at(0)!
+        .split(' ');
+
+      const quantity = splitSaturatedFatPercentage
+        .at(splitSaturatedFatPercentage.length - 1)!
+        .trim();
+
+      values.push([quantity, saturatedFatPercentage]);
+    }
+
+    if (sugarPercentage) {
+      const splitSugarPercentage = sugarPercentage
+        .split(' (')
+        .at(0)!
+        .split(' ');
+
+      const quantity = splitSugarPercentage
+        .at(splitSugarPercentage.length - 1)!
+        .trim()!;
+
+      values.push([quantity, sugarPercentage]);
+    }
+
+    if (saltPercentage) {
+      const splitSaltPercentage = saltPercentage.split(' (').at(0)!.split(' ');
+
+      const quantity = splitSaltPercentage
+        .at(splitSaltPercentage.length - 1)!
+        .trim()!;
+
+      values.push([quantity, saltPercentage]);
+    }
+
+    // change "baixa" to "low", "moderada" to "moderate", "elevada" to "high"
+    const quantityOption: { [key: string]: string } = {
+      baixa: 'low',
+      moderada: 'moderate',
+      elevada: 'high',
+    };
+
+    const formatValues = values.map((subArray) => {
+      const firstIndex = quantityOption[subArray[0]] || subArray[0];
+
+      return [firstIndex, subArray[1]];
+    });
+
+    //nutrition table body
+    const tableBody = document.querySelector('tbody')!.querySelectorAll('tr');
+
+    // energy
+    const [energyPerHundredGrams, energyPerServing] = tableBody!
+      .item(0)
+      .textContent!.split('\n')
+      .filter((string) => string.trim() !== '')
+      .map((string) => string.trim())
+      .filter((string) => !string.includes('%'))
+      .filter((string) => !string.includes('Energia'));
+
+    // fat
+    const [fatPerHundredGrams, fatPerServing] = tableBody!
+      .item(1)
+      .textContent!.split('\n')
+      .filter((string) => string.trim() !== '')
+      .map((string) => string.trim())
+      .filter((string) => !string.includes('%'))
+      .filter((string) => !string.includes('Gorduras/lípidos'));
+
+    // carbs
+    const [carbsPerHundredGrams, carbsPerServing] = tableBody!
+      .item(3)
+      .textContent!.split('\n')
+      .filter((string) => string.trim() !== '')
+      .map((string) => string.trim())
+      .filter((string) => !string.includes('%'))
+      .filter((string) => !string.includes('Carboidratos'));
+
+    // fiber
+    const [fiberPerHundredGrams, fiberPerServing] = tableBody!
+      .item(5)
+      .textContent!.split('\n')
+      .filter((string) => string.trim() !== '')
+      .map((string) => string.trim())
+      .filter((string) => !string.includes('%'))
+      .filter((string) => !string.includes('Fibra alimentar'));
+
+    // proteins
+    // const test = tableBody!
+    const [proteinsPerHundredGrams, proteinsPerServing] = tableBody!
+      .item(6)
+      .textContent!.split('\n')
+      .filter((string) => string.trim() !== '')
+      .map((string) => string.trim())
+      .filter((string) => !string.includes('%'))
+      .filter((string) => !string.includes('Proteínas'));
+
+    // salt
+    const [saltPerHundredGrams, saltPerServing] = tableBody!
+      .item(7)
+      .textContent!.split('\n')
+      .filter((string) => string.trim() !== '')
+      .map((string) => string.trim())
+      .filter((string) => !string.includes('%'))
+      .filter((string) => !string.includes('Sal'));
 
     return {
-      Energia: {
-        per100g: energyPerHundredGrams,
-        perServing: energyPerServingSize?.includes('%')
-          ? '?'
-          : energyPerServingSize,
+      title: productTitle,
+      quantity: productQuantity,
+      ingredients: {
+        hasPalmOil,
+        isVegan,
+        isVegetarian,
+        list: ingredientsList,
       },
 
-      'Gorduras/lípidos': {
-        per100g: fatHundredGrams,
-        perServing: fatHundredGrams?.includes('%') ? '?' : fatServingSize,
+      nutrition: {
+        score: nutriScore,
+        values: formatValues,
       },
 
-      Carboidratos: {
-        per100g: carbsHundredGrams,
-        perServing: carbsServingSize?.includes('%') ? '?' : carbsServingSize,
+      servingSize: isUnknownPortion,
+
+      data: {
+        Energia: {
+          per100g: energyPerHundredGrams,
+          perServing: energyPerServing ? energyPerServing : 'unknown',
+        },
+        'Gorduras/lípidos': {
+          per100g: fatPerHundredGrams,
+          perServing: fatPerServing ? fatPerServing : 'unknown',
+        },
+        Carboidratos: {
+          per100g: carbsPerHundredGrams,
+          perServing: carbsPerServing ? carbsPerServing : 'unknown',
+        },
+        'Fibra alimentar': {
+          per100g: fiberPerHundredGrams,
+          perServing: fiberPerServing ? fiberPerServing : 'unknown',
+        },
+        Proteínas: {
+          per100g: proteinsPerHundredGrams,
+          perServing: proteinsPerServing ? proteinsPerServing : 'unknown',
+        },
+        Sal: {
+          per100g: saltPerHundredGrams,
+          perServing: saltPerServing ? saltPerServing : 'unknown',
+        },
       },
 
-      'Fibra alimentar': {
-        per100g: fiberHundredGrams,
-        perServing: fiberServingSize?.includes('%') ? '?' : fiberServingSize,
-      },
-
-      Proteínas: {
-        per100g: proteinsHundredGrams,
-        perServing: proteinsServingSize?.includes('%')
-          ? '?'
-          : proteinsServingSize,
-      },
-
-      Sal: {
-        per100g: saltHundredGrams,
-        perServing: saltServingSize?.includes('%') ? '?' : saltServingSize,
+      nova: {
+        score: novaScore,
+        title: novaScoreTitle,
       },
     };
-  };
-
-  private getDetailDescriptionProduct = async (page: Page) => {
-    return page.evaluate(() => {
-      const productTitle = document.querySelector(
-        '.title-1[property="food:name"]'
-      )!.textContent;
-
-      const productQuantity = document.querySelector(
-        '#field_quantity_value'
-      )!.textContent;
-
-      const isVeganProduct = document.querySelector(
-        '#panel_ingredients_analysis_en-vegan_content'
-      );
-
-      const isVegetarianProduct = document.querySelector(
-        '#panel_ingredients_analysis_en-vegetarian'
-      );
-
-      const hasPalmOil = document.querySelector(
-        '#panel_ingredients_analysis_en-palm-oil-free'
-      );
-
-      const ingredientsList = document.querySelector(
-        '#panel_ingredients_content'
-      )?.textContent;
-
-      const serializeIngredientsList = ingredientsList!
-        .split('\n') // split by break lines
-        .filter((element) => element.trim() !== '') // validate if current index is empty space and remove from array
-        .map((ingredient) => ingredient.trim()) // removes empty spaces before and after in the string
-        .filter((ingredient) => !ingredient.includes(':')); // removes strings if includes ':'
-
-      const ingredientsListValidation = serializeIngredientsList.includes(
-        'Pode adicionar a lista de ingredientes?'
-      )
-        ? []
-        : serializeIngredientsList; // validation for products that do not have a known list of ingredients
-
-      const nutritionFields = {
-        novaScore: '',
-        novaDescription: '',
-        nutriScore: '',
-      };
-
-      // get nutrition fields (NOVA and Nutri-Score)
-      for (const nutrition of document.querySelector('#attributes_grid')!
-        .childNodes) {
-        // console.log('NUTRITION: ', nutrition);
-        const textContent = nutrition.textContent!;
-
-        //  validate  if product doesn't have nova
-        if (textContent.includes('NOVA não calculada')) {
-          nutritionFields.novaScore = 'unknown';
-          nutritionFields.novaDescription =
-            'Nível desconhecido de processamento do alimento';
-        }
-
-        ///  validate  if product doesn't have nutri score
-        else if (textContent.includes('Nutri-Score desconhecido')) {
-          nutritionFields.nutriScore = 'unknown';
-        }
-
-        // get nova when product have nova score
-        else if (textContent.includes('NOVA')) {
-          nutritionFields.novaScore = textContent
-            .split('Alimentos')
-            .at(0)!
-            .substring(5)
-            .trim();
-
-          nutritionFields.novaDescription = textContent
-            .split('NOVA ')
-            .at(1)!
-            .substring(1)
-            .trim();
-        }
-
-        // get nutri score when product have nutri score
-        else if (textContent.includes('Nutri-Score')) {
-          nutritionFields.nutriScore = textContent
-            .split('Qualidade')
-            .at(0)!
-            .substring(11)!
-            .trim();
-        }
-      }
-
-      let levelFat = '';
-      if (document.querySelector('#panel_nutrient_level_fat')) {
-        levelFat = document
-          .querySelector('#panel_nutrient_level_fat')!
-          .textContent!.split('\n')
-          .filter((element) => element.trim() !== '')
-          .map((ingredient) => ingredient.trim())
-          .at(0)!;
-      }
-
-      let levelSuturedFat = '';
-      if (document.querySelector('#panel_nutrient_level_saturated-fat')) {
-        levelSuturedFat = document
-          .querySelector('#panel_nutrient_level_saturated-fat')
-          ?.textContent?.split('\n')
-          .filter((element) => element.trim() !== '')
-          .map((ingredient) => ingredient.trim())
-          .at(0)!;
-      }
-
-      let levelSugar = '';
-      if (document.querySelector('#panel_nutrient_level_sugars')) {
-        levelSugar = document
-          .querySelector('#panel_nutrient_level_sugars')
-          ?.textContent?.split('\n')
-          .filter((element) => element.trim() !== '')
-          .map((ingredient) => ingredient.trim())
-          .at(0)!;
-      }
-
-      let levelSalt = '';
-      if (document.querySelector('#panel_nutrient_level_salt')) {
-        levelSalt = document
-          .querySelector('#panel_nutrient_level_salt')
-          ?.textContent?.split('\n')
-          .filter((element) => element.trim() !== '')
-          .map((ingredient) => ingredient.trim())
-          .at(0)!;
-      }
-
-      const nutritionTable = document
-        .querySelector('table')!
-        .textContent!.split('\n')
-        .filter((element) => element.trim() !== '')
-        .map((ingredient) => ingredient.trim());
-
-      const servingSize = nutritionTable
-        .find((element) => element.includes('Como vendidopor porção'))
-        ?.split('Como vendidopor porção ')
-        .at(1);
-
-      return {
-        title: productTitle,
-        quantity: productQuantity,
-        ingredients: {
-          hasPalmOil: hasPalmOil ? 'has' : 'unknown',
-          isVegan: isVeganProduct ? true : false,
-          isVegetarian: isVegetarianProduct ? true : false,
-          list: ingredientsListValidation,
-        },
-
-        nutrition: {
-          score: nutritionFields.nutriScore,
-          values: [[levelFat], [levelSuturedFat], [levelSugar], [levelSalt]],
-        },
-
-        servingSize: servingSize ? servingSize : '',
-
-        data: {},
-        nutritionTable,
-
-        nova: {
-          score: nutritionFields.novaScore,
-          title: nutritionFields.novaDescription,
-        },
-      };
-    });
   };
 
   public searchByProductId = async (productId: string) => {
@@ -306,48 +301,38 @@ export class OpenFoodService {
       throw new Exception('product not found', 404);
     }
 
-    // wait page is load
-    await page.waitForSelector('.title-1[property="food:name"]');
-    let productContent = await this.getDetailDescriptionProduct(page);
-
+    const scrapingData = await page.evaluate(this.scrappingSearchByProductId);
     await browser.close();
 
-    const data = this.serializeData(productContent.nutritionTable);
-
-    productContent.data = data;
-
-    // add high, low, moderate  according to nutrition level
-    for (const values of productContent.nutrition.values) {
-      const level = this.calculateLevel(values.at(0)!);
-
-      if (level) values.unshift(level);
-    }
-
-    // @ts-ignore
-    delete productContent.nutritionTable;
-
-    return productContent;
+    return scrapingData;
   };
 
   private scrappingSearchByTerm = () => {
     const productsList = document.querySelectorAll('ul#products_match_all li');
 
-    const data = [];
+    // array that will be populate after formatting products
+    const data: Array<DataProductsSearchByTerm> = [];
 
     for (const product of productsList) {
+      // cards images
       const images = product.getElementsByClassName('list_product_icons');
+
+      // find product id in href anchor
       const link = product.querySelector('.list_product_a')!;
       const productId = link.getAttribute('href')!.split('/').at(4)!;
 
       const nutriScoreImage = images.item(0);
       const novaImage = images.item(1);
 
+      // formatting Nutri-Score, first index is score and next index is the title
       const splitNutriScore = nutriScoreImage!
         .getAttribute('title')!
         .split(' - ');
 
+      // formatting NOVA, first index is score and next index is the title
       const splitNova = novaImage!.getAttribute('title')!.split(' - ');
 
+      // validate if is unknown nova score
       const validateUnknownNova = splitNova.at(0)!.includes('não calculada')
         ? splitNova.at(0)
         : splitNova.at(0)!.substring(5);
@@ -360,8 +345,8 @@ export class OpenFoodService {
           title: splitNutriScore.at(1)!.trim(),
         },
         nova: {
-          score: validateUnknownNova,
-          title: splitNova.at(1),
+          score: validateUnknownNova ? validateUnknownNova : '',
+          title: splitNova.at(1) ? splitNova.at(1)! : '',
         },
       });
     }
@@ -388,6 +373,7 @@ export class OpenFoodService {
     const dataScraping = await page.evaluate(this.scrappingSearchByTerm);
     await browser.close();
 
+    // removes elements that does't satisfy conditions passed by parameter
     const filterByTerms = dataScraping.filter(
       (data) => data.nova.score === nova && data.nutrition.score === nutrition
     );

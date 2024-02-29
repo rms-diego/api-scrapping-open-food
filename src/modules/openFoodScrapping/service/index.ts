@@ -170,10 +170,13 @@ export class OpenFoodService {
       elevada: 'high',
     };
 
-    const formatValues = values.map((subArray) => {
-      const firstIndex = quantityOption[subArray[0]] || subArray[0];
+    const formatValues = values.map((valuesSubArray) => {
+      const quantityIndex = 0;
+      const percentageTextContentIndex = 1;
 
-      return [firstIndex, subArray[1]];
+      const firstIndex = quantityOption[valuesSubArray[quantityIndex]];
+
+      return [firstIndex, valuesSubArray[percentageTextContentIndex]];
     });
 
     //nutrition table body

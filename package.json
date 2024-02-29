@@ -4,7 +4,9 @@
   "description": "Desafio técnico scrapping IN8",
   "main": "src/server.ts",
   "scripts": {
-    "dev": "tsx watch src/server.ts"
+    "dev": "tsx watch src/server.ts",
+    "build": "tsup",
+    "start": "node dist/server.js"
   },
   "keywords": [],
   "author": "",

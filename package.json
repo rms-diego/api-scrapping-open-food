@@ -9,7 +9,8 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsup",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "test": "vitest"
   },
   "keywords": [],
   "author": "Diego Ramos <diegorbrito9@gmail.com>",

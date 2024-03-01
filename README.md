@@ -91,13 +91,14 @@ Antes de começar, verifique se você atendeu aos seguintes requisitos:
 ## ✔️ Requisitos Funcionais
 
 - [x] Criar um endpoint para fazer a busca de um alimento pelo seu código barra
+
 - [x] Criar um endpoint para fazer a busca de um alimento através de termos
 
 ## Regras de Negocio
 
-**- [x] Todas as buscas devem ser feitas através de scrapping**
+- [x] Todas as buscas devem ser feitas através de scrapping
 
-**- [x] Nenhum dado deve ser persistindo em um banco de dados**
+- [x] Nenhum dado deve ser persistindo em um banco de dados
 
 - Regra de negócios busca por código de barra
 

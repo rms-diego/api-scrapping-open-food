@@ -94,25 +94,25 @@ export class OpenFoodService {
 
     // NUTRITION PERCENTAGE AND QUANTITY SECTION
     const nutritionValues = document
-      .querySelector('#panel_nutrient_levels_content')!
-      .textContent!.split('\n')
+      .querySelector('#panel_nutrient_levels_content')
+      ?.textContent!.split('\n')
       .filter((string) => string.trim() !== '')
       .map((string) => string.trim())
       .filter((string) => string.includes('%'));
 
-    const fatPercentage = nutritionValues.find((nutrition) =>
+    const fatPercentage = nutritionValues?.find((nutrition) =>
       nutrition.includes('Gorduras/lípidos')
     );
 
-    const saturatedFatPercentage = nutritionValues.find((nutrition) =>
+    const saturatedFatPercentage = nutritionValues?.find((nutrition) =>
       nutrition.includes('Gorduras/lípidos/ácidos gordos saturados')
     );
 
-    const sugarPercentage = nutritionValues.find((nutrition) =>
+    const sugarPercentage = nutritionValues?.find((nutrition) =>
       nutrition.includes('Açúcares')
     );
 
-    const saltPercentage = nutritionValues.find((nutrition) =>
+    const saltPercentage = nutritionValues?.find((nutrition) =>
       nutrition.includes('Sal em')
     );
 

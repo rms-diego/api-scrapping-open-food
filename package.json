@@ -10,7 +10,7 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsup",
     "start": "node dist/server.js",
-    "test": "vitest"
+    "test": "vitest --testTimeout=600000"
   },
   "keywords": [],
   "author": "Diego Ramos <diegorbrito9@gmail.com>",

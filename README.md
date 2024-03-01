@@ -128,3 +128,12 @@ Antes de começar, verifique se você atendeu aos seguintes requisitos:
 A API expõe 3 endpoints você pode consultar no endpoint abaixo:
 
 - `GET /docs` – para acessar a documentação da API.
+
+
+## Testes
+
+Para rodar os testes execute o comando abaixo
+
+```shell
+  npm run test
+```

@@ -7,5 +7,4 @@ export default {
       '@': path.resolve(__dirname, './src'),
     },
   },
-  timeout: 0,
 };

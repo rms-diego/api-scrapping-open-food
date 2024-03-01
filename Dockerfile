@@ -13,8 +13,5 @@ RUN npm install
 # Buildando o projeto
 RUN npm run build
 
-# Porta que rodará o projeto dentro do container
-EXPOSE 3000
-
 # Comando para iniciar a aplicação quando o container for iniciado
 ENTRYPOINT [ "npm", "start" ] 

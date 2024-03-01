@@ -9,9 +9,12 @@ export function errorMiddleware(
   _next: NextFunction
 ) {
   if (error instanceof ZodError) {
-    const formatMessage = error.issues;
+    const issues = error.errors.map((element) => ({
+      message: element.message,
+      path: element.path,
+    }));
 
-    return res.status(400).json(formatMessage);
+    return res.status(400).json({ issues });
   }
 
   if (error instanceof Exception) {

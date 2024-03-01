@@ -31,31 +31,50 @@ describe('[GET] /products - Tests cases to findByTerm', () => {
   });
 
   test('It should be thrown error if fetch a product passing wrong nutrition', async () => {
-    const response = await request.get(`${baseUrl}?nutrition=z&nova=1`);
-    const data = response.body.at(0);
+    const wrongNutrition = 'z';
+    const response = await request.get(`${baseUrl}?nutrition=${wrongNutrition}&nova=1`);
+    const data = response.body;
 
     expect(response.statusCode).toBe(400);
     expect(data).toEqual({
-      validation: 'regex',
-      code: 'invalid_string',
-      message: 'Invalid',
-      path: ['nutrition'],
+      issues: [
+        {
+          message: "wrong nutrition, only accept 'A', 'B', 'C', 'D', 'E'",
+          path: ['nutrition'],
+        },
+      ],
     });
   });
 
-  test('It should be thrown error if fetch a product passing wrong nova', async () => {
-    const response = await request.get(`${baseUrl}?nutrition=a&nova=1000`);
-    const data = response.body.at(0);
+  test('It should be thrown error if fetch a product passing 1000 on nova', async () => {
+    const wrongNova = 1000;
+    const response = await request.get(`${baseUrl}?nutrition=a&nova=${wrongNova}`);
+    const data = response.body;
 
     expect(response.statusCode).toBe(400);
     expect(data).toEqual({
-      code: 'too_big',
-      maximum: 4,
-      type: 'number',
-      inclusive: true,
-      exact: false,
-      message: 'Number must be less than or equal to 4',
-      path: ['nova'],
+      issues: [
+        {
+          message: 'max nova is 4',
+          path: ['nova'],
+        },
+      ],
+    });
+  });
+
+  test('It should be thrown error if fetch a product passing -1000 on nova', async () => {
+    const wrongNova = -1000;
+    const response = await request.get(`${baseUrl}?nutrition=a&nova=${wrongNova}`);
+    const data = response.body;
+
+    expect(response.statusCode).toBe(400);
+    expect(data).toEqual({
+      issues: [
+        {
+          message: 'min nova is 1',
+          path: ['nova'],
+        },
+      ],
     });
   });
 });

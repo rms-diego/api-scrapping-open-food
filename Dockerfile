@@ -1,4 +1,4 @@
-# Imagem do node na versão 14
+# Imagem do node na versão 20
 FROM node:20-alpine
 
 # Criando diretorio /app dentro do container

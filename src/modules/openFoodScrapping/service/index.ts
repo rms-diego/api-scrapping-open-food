@@ -287,7 +287,7 @@ export class OpenFoodService {
     };
   };
 
-  public searchByProductId = async (productId: string) => {
+  public searchByProductId = async (productId: number) => {
     const { browser, page } = await getPuppeteerClient();
 
     const productUrl = `${this.openFoodUrl}/produto/${productId}`;

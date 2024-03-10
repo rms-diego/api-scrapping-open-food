@@ -7,6 +7,7 @@
   <div align="center">
     <img src="https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white" />
     <img src="https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB" />
+    <img src="https://img.shields.io/badge/Puppeteer-40B5A4?style=for-the-badge&logo=Puppeteer&logoColor=white" />
     <img src="https://img.shields.io/badge/-Swagger-%23Clojure?style=for-the-badge&logo=swagger&logoColor=white" />
   </div>
 </h1>
@@ -129,7 +130,6 @@ Antes de começar, verifique se você atendeu aos seguintes requisitos:
 A API expõe 3 endpoints você pode consultar no endpoint abaixo:
 
 - `GET /docs` – para acessar a documentação da API.
-
 
 ## Testes
 

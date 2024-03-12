@@ -1,4 +1,4 @@
-# Desafio técnico IN8 📚
+# Scrapping Open food 📚
 
 <h1>
   Tecnologias 👨‍💻
@@ -97,18 +97,14 @@ Antes de começar, verifique se você atendeu aos seguintes requisitos:
 
 ## Regras de Negocio
 
-- [x] Todas as buscas devem ser feitas através de scrapping
-
-- [x] Nenhum dado deve ser persistindo em um banco de dados
+- [x] Todas as buscas devem ser feitas através de scrapping, caso o produto não seja persistido no banco de dados
 
 - Regra de negócios busca por código de barra
 
   - [x] Deve ser retornado um erro caso seja feita uma busca por um código de barra que não existe com o status de 404
-  - [x] O retorno deve ser estritamente igual ao descrito no notion do desafio https://hiroyamaguch.notion.site/Vaga-para-Desenvolvedor-J-nior-5aca5eae148247848e91589e61f029e1?pvs=4
 
 - Regra de negócios busca por termo
 
-  - [x] O retorno deve ser estritamente igual ao descrito no notion do desafio https://hiroyamaguch.notion.site/Vaga-para-Desenvolvedor-J-nior-5aca5eae148247848e91589e61f029e1?pvs=4
   - [x] Deve ser capaz de enviar 3 parâmetros via query params (nova, nutrition, page)
   - [x] Definir um valor padrão caso algum desses parâmetros não seja passados
   - [x] Caso o Parâmetro "nova" não seja passado o valor padrão deve ser: 1
